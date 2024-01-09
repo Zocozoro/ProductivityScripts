@@ -1,3 +1,13 @@
+# Checking current git alias
+```
+git config --get-regexp ^alias
+```
+
+# Setting alias
+```
+git config --global alias.sa 'stash apply'
+```
+
 # Pure shorthand to save typing
 
 ```
