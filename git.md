@@ -36,7 +36,7 @@ alias.su !f() { git branch --set-upstream-to=origin/$(git rev-parse --abbrev-ref
 ```
 
 # Commands to remove local branches no longer needed. Scans currently checked out branch commits to see if each local branch commits are already present. 
-# The former acts as a dry run to let you know which branches will get deleted. The latter does so.
+The former acts as a dry run to let you know which branches will get deleted. The latter does so.
 ```
 alias.cleanup !git branch --format '%(refname:short)' --merged | grep -E -v '(release.*|develop|^\*)' | xargs -n1 -r echo
 ```
