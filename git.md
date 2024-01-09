@@ -1,21 +1,29 @@
 # Pure shorthand to save typing
 
-`alias.c checkout`
+```
+alias.c checkout
+```
 ```
 alias.b branch
 ```
-
+```
 alias.s stash
-
+```
+```
 alias.sa stash apply
-
+```
+```
 alias.f fetch
-
+```
+```
 alias.rh reset --hard
-
+```
+```
 alias.rs reset --soft HEAD^
-
+```
+```
 alias.sl stash list
+```
 
 # Branch list but in order of usage (easy to find recent branches)
 
