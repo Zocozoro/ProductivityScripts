@@ -1,8 +1,7 @@
 # Pure shorthand to save typing
 
-alias.c checkout
-
-alias.b branch
+`alias.c checkout`
+`alias.b branch`
 
 alias.s stash
 
