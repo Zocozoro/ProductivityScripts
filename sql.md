@@ -61,3 +61,136 @@ ORDER BY
     migs.[avg_user_impact] DESC;
 
 ```
+
+Azure Data Studio User Settings
+```
+{
+    "workbench.enablePreviewFeatures": true,
+    "mssql.format.keywordCasing": "uppercase",
+    "editor.wordSeparators": "`~!#$%^&*()=+{}\\|;:'\",.<>/?",
+    "editor.dragAndDrop": false,
+    "editor.emptySelectionClipboard": false,
+    "workbench.editorAssociations": {
+        "*.{sqlplan}": "workbench.editor.executionplan"
+    },
+    "editor.fontSize": 16,
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "[sql]": {
+        "editor.defaultFormatter": "Microsoft.mssql"
+    },
+    "editor.acceptSuggestionOnEnter": "off",
+    "workbench.editor.wrapTabs": true,
+    "editor.suggest.showColors": false,
+    "editor.suggest.showCustomcolors": false,
+    "editor.suggest.showDeprecated": false,
+    "editor.suggest.showFunctions": false,
+    "editor.suggest.showFolders": false,
+    "editor.suggest.showEvents": false,
+    "editor.suggest.showEnums": false,
+    "editor.suggest.showEnumMembers": false,
+    "editor.suggest.showMethods": false,
+    "editor.suggest.showUsers": false,
+    "editor.suggest.showValues": false,
+    "editor.suggest.showWords": false,
+    "window.zoomLevel": 1,
+    "workbench.editor.pinnedTabSizing": "compact",
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "mssql.tableDesigner.preloadDatabaseModel": true,
+    "editor.detectIndentation": false,
+    "dashboard.server.properties": true,
+    "workbench.colorCustomizations": {
+        "queryEditor.nullBackground": "#3e3430"
+    },
+    "workbench.colorTheme": "Default Dark Azure Data Studio",
+    "queryEditor.results.showCopyCompletedNotification": false
+}
+```
+
+Azure Data Studio Keybinding
+```
+// Place your key bindings in this file to override the defaultsauto[]
+[
+    {
+        "key": "shift+win+r",
+        "command": "workbench.action.openRecent"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "-workbench.action.openRecent"
+    },
+    {
+        "key": "shift+win+r",
+        "command": "workbench.action.reloadWindow",
+        "when": "isDevelopment"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "-workbench.action.reloadWindow",
+        "when": "isDevelopment"
+    },
+    {
+        "key": "shift+win+r",
+        "command": "workbench.action.quickOpenNavigateNextInRecentFilesPicker",
+        "when": "inQuickOpen && inRecentFilesPicker"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "-workbench.action.quickOpenNavigateNextInRecentFilesPicker",
+        "when": "inQuickOpen && inRecentFilesPicker"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "toggleQueryResultsKeyboardAction",
+        "when": "queryEditorVisible"
+    },
+    {
+        "key": "shift+win+r",
+        "command": "-toggleQueryResultsKeyboardAction",
+        "when": "queryEditorVisible"
+    },
+    {
+        "key": "ctrl+e",
+        "command": "editor.action.insertSnippet",
+        "when": "editorTextFocus",
+        "args": {
+            "snippet": "BEGIN TRANSACTION;\n/**** <Your SQL> ****/\n/********************/\n\n\n${TM_SELECTED_TEXT}\n\n\n/*********************/\n/**** </Your SQL> ****/\nROLLBACK TRANSACTION;"
+        }
+    },
+    {
+        "key": "shift+delete",
+        "command": "editor.action.deleteLines",
+        "when": "textInputFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+k",
+        "command": "-editor.action.deleteLines",
+        "when": "textInputFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+delete",
+        "command": "-deleteFile",
+        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+    },
+    {
+        "key": "shift+delete",
+        "command": "-editor.action.clipboardCutAction"
+    },
+    {
+        "key": "ctrl+d",
+        "command": "-editor.action.addSelectionToNextFindMatch",
+        "when": "editorFocus"
+    },
+    {
+        "key": "ctrl+d",
+        "command": "editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+down",
+        "command": "-editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    }
+]
+```
