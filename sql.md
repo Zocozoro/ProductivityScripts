@@ -62,6 +62,77 @@ ORDER BY
 
 ```
 
+SQL statement to get size of table as well as the rows in each table
+```
+
+DECLARE @ShowDiskSizeByTable BIT = 1;
+DECLARE @ShowNumberOfRowsByTable BIT = 1;
+DECLARE @ShowNumberOfRowsByTable_ExcludeEmptyTables BIT = 1;
+
+IF (@ShowDiskSizeByTable = 1)
+BEGIN
+    SELECT 
+        CONCAT(s.[Name], '.', t.[NAME]) AS [SchemaTableName],
+        SUM(a.[used_pages]) * 8.0 / 1024 AS [TableSizeMB]
+    FROM 
+        [sys].[tables] t
+        JOIN [sys].[indexes] i ON t.[OBJECT_ID] = i.[object_id]
+        JOIN [sys].[partitions] p ON i.[object_id] = p.[OBJECT_ID] AND i.[index_id] = p.[index_id]
+        JOIN [sys].[allocation_units] a ON p.[partition_id] = a.[container_id]
+        JOIN [sys].[schemas] s ON t.[schema_id] = s.[schema_id]
+    WHERE   
+        t.[NAME] NOT LIKE 'dt%' 
+        AND t.[is_ms_shipped] = 0
+        AND i.[OBJECT_ID] > 255 
+    GROUP BY 
+        s.[Name],
+        t.[NAME]
+    ORDER BY 
+        SUM(a.[used_pages]) DESC;
+END
+
+IF (@ShowNumberOfRowsByTable = 1)
+BEGIN
+    DECLARE @TableName NVARCHAR(256), @SchemaName NVARCHAR(256), @SQL NVARCHAR(MAX);
+    DECLARE @Results TABLE (SchemaTable NVARCHAR(512), NumberOfRows INT);
+
+    DECLARE TableCursor CURSOR FOR
+    SELECT TABLE_SCHEMA, TABLE_NAME
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME NOT LIKE 'dt%';
+
+    OPEN TableCursor;
+    FETCH NEXT FROM TableCursor INTO @SchemaName, @TableName;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @SQL = N'SELECT ''' + @SchemaName + '.' + @TableName + ''' AS SchemaTable, COUNT(*) AS NumberOfRows FROM [' + @SchemaName + '].[' + @TableName + ']';
+        INSERT INTO @Results (SchemaTable, NumberOfRows)
+        EXEC sp_executesql @SQL;
+
+        FETCH NEXT FROM TableCursor INTO @SchemaName, @TableName;
+    END
+
+    CLOSE TableCursor;
+    DEALLOCATE TableCursor;
+
+    SELECT 
+        * 
+    FROM 
+        @Results r
+    WHERE
+        @ShowNumberOfRowsByTable_ExcludeEmptyTables = 0
+        OR
+        (
+            @ShowNumberOfRowsByTable_ExcludeEmptyTables = 1
+            AND
+            r.[NumberOfRows] > 0
+        )
+    ORDER BY
+        r.[SchemaTable];
+END
+```
+
 Azure Data Studio User Settings
 ```
 {
