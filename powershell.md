@@ -33,9 +33,57 @@ function tmvc {
 
 A function to delete every bin/obj folder recursively from current location. Created due to frustration with VS not doing this correctly. Bit of a nuclear option.
 ```
+# Delete all bin and obj folders as 
 function dbao {
-  [string[]]$foldersToIgnore='node_modules';
-  Get-ChildItem .\ -Include bin,obj -Recurse|Where-Object{$_.FullName -inotmatch "\\$($foldersToIgnore -join '|')\\"}|Remove-Item -Force -Recurse
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param(
+        [string[]]$FoldersToIgnore = @('node_modules'),
+        [switch]$Quiet
+    )
+
+    $root = (Get-Location).Path
+    $ignoreRegex = "\\($($FoldersToIgnore -join '|'))\\"
+
+    if (-not $Quiet) {
+        Write-Host "Scanning for bin/obj folders under: $root"
+        if ($FoldersToIgnore.Count -gt 0) {
+            Write-Host "Ignoring paths matching: $($FoldersToIgnore -join ', ')"
+        }
+    }
+
+    # Find candidates first so we can show progress
+    $targets = Get-ChildItem -Path $root -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -in @('bin','obj') -and $_.FullName -inotmatch $ignoreRegex }
+
+    $total = @($targets).Count
+    if ($total -eq 0) {
+        if (-not $Quiet) { Write-Host "No bin/obj folders found." }
+        return
+    }
+
+    if (-not $Quiet) { Write-Host "Found $total folder(s) to delete." }
+
+    $i = 0
+    foreach ($t in $targets) {
+        $i++
+        if (-not $Quiet) {
+            Write-Progress -Activity "Deleting build artifacts" -Status "$i / ${$total}: $($t.FullName)" -PercentComplete (($i / $total) * 100)
+        }
+
+        if ($PSCmdlet.ShouldProcess($t.FullName, "Remove build artifact folder")) {
+            try {
+                Remove-Item -LiteralPath $t.FullName -Force -Recurse -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Failed to delete: $($t.FullName) — $($_.Exception.Message)"
+            }
+        }
+    }
+
+    if (-not $Quiet) {
+        Write-Progress -Activity "Deleting build artifacts" -Completed
+        Write-Host "Done. Deleted: $total"
+    }
 }
 ```
 
@@ -107,5 +155,88 @@ if ($changesMade) {
     }
 } else {
     Write-Output "No duplicates found. No changes were made to the .csproj file."
+}
+```
+
+Get each owner of currently git merge conflicts
+```
+# Print out owners of current git merge conflicts
+function conflicts {
+
+    $files = git diff --name-only --diff-filter=U
+
+    if (-not $files) {
+        Write-Host "No merge conflicts found."
+        return
+    }
+
+    $mergeHead = git rev-parse --verify MERGE_HEAD 2>$null
+    if (-not $mergeHead) {
+        Write-Host "You are not in an unresolved merge state."
+        return
+    }
+
+    $results = foreach ($file in $files) {
+
+        $ours = git log -1 HEAD --format="%an" -- "$file" 2>$null
+        $theirs = git log -1 MERGE_HEAD --format="%an" -- "$file" 2>$null
+
+        [PSCustomObject]@{
+            File     = $file
+            Current  = $ours
+            Previous = $theirs
+        }
+    }
+
+    $results | Format-Table -AutoSize
+}
+```
+
+Some string search commands
+```
+# String search
+function ss {
+    param(
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$Pattern,
+        [Parameter(Position=1)]
+        [string]$Path = '.'
+    )
+    Get-ChildItem -Path $Path -Recurse -File -ErrorAction SilentlyContinue |
+        Select-String -Pattern $Pattern |
+        Group-Object Path |
+        ForEach-Object {
+            ''
+            $_.Name
+            '-' * 80
+            $_.Group | ForEach-Object { "  Line $($_.LineNumber): $($_.Line.Trim())" }
+        }
+}
+
+# String search to file
+function ssf {
+    param(
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$Pattern,
+        [Parameter(Position=1)]
+        [string]$Path = '.',
+        [Parameter(Position=2)]
+        [string]$OutFile
+    )
+
+    if (-not $OutFile) {
+        $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+        $OutFile = "ss_results_$timestamp.txt"
+    }
+
+    $output = ss $Pattern $Path
+
+    if (-not $output) {
+        Write-Host "No matches found." -ForegroundColor Yellow
+        return
+    }
+
+    $output | Out-File -FilePath $OutFile -Encoding UTF8
+    Write-Host "Saved results to $OutFile" -ForegroundColor Green
 }
 ```
